@@ -62,14 +62,14 @@
     - Test deck creation dialog functionality
     - _Requirements: 1.1, 1.3, 2.1, 2.2_
 
-- [ ] 5. Build deck management interface
-  - [ ] 5.1 Create DeckManager component for deck listing
+- [x] 5. Build deck management interface
+  - [x] 5.1 Create DeckManager component for deck listing
     - Display deck cards with names, colors, and card counts using existing storage utilities
     - Implement deck selection and deletion functionality
     - Add empty state when no decks exist
     - _Requirements: 2.3, 2.4, 2.5, 2.6_
 
-  - [ ] 5.2 Implement deck deletion with confirmation dialog
+  - [x] 5.2 Implement deck deletion with confirmation dialog
     - Create confirmation modal for deck deletion
     - Integrate with existing flashcardStorage.deleteDeck method
     - Handle state updates after deletion
