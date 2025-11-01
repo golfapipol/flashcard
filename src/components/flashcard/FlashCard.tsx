@@ -61,7 +61,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
     }
   };
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     // Prevent click if it was part of a swipe gesture
     if (touchStart && touchEnd) {
       const distanceX = Math.abs(touchStart.x - touchEnd.x);
