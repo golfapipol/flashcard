@@ -44,14 +44,14 @@
     - Include build outputs, dependencies, and temporary files
     - _Requirements: 5.1, 5.2_
 
-- [ ] 4. Implement CSV import functionality
-  - [ ] 4.1 Create CSVImporter component with file input handling
+- [x] 4. Implement CSV import functionality
+  - [x] 4.1 Create CSVImporter component with file input handling
     - Build file selection interface with drag-and-drop support
     - Integrate existing CSV parser with React component
     - Add validation UI for file format and content errors
     - _Requirements: 1.1, 1.2, 1.3, 1.5_
 
-  - [ ] 4.2 Create deck creation dialog with name and color selection
+  - [x] 4.2 Create deck creation dialog with name and color selection
     - Build modal dialog for deck configuration
     - Implement color picker with predefined palette from types
     - Add form validation for deck name and color selection
