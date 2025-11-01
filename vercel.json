@@ -12,6 +12,12 @@
   ],
   "routes": [
     {
+      "src": "/assets/(.*)",
+      "headers": {
+        "cache-control": "max-age=31536000"
+      }
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
@@ -20,5 +26,4 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite"
-
 }
