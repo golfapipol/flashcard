@@ -2,7 +2,8 @@
 
 ## Overview
 
-The flashcard application will be integrated into the existing AD4PT application as a new route. It will provide a complete flashcard study system with CSV import capabilities, deck management, and an interactive card study interface. The application leverages the existing React, TypeScript, and Tailwind CSS infrastructure while adding new components and utilities specific to flashcard functionality.
+The flashcard application.
+It will provide a complete flashcard study system with CSV import capabilities, deck management, and an interactive card study interface. The application leverages the existing React, TypeScript, and Tailwind CSS infrastructure while adding new components and utilities specific to flashcard functionality.
 
 ## Architecture
 
