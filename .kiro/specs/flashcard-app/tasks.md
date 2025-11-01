@@ -80,21 +80,21 @@
     - Test confirmation dialog interactions
     - _Requirements: 2.3, 2.4, 2.5_
 
-- [ ] 6. Create flashcard study interface
-  - [ ] 6.1 Build FlashCard component with flip animation
+- [x] 6. Create flashcard study interface
+  - [x] 6.1 Build FlashCard component with flip animation
     - Implement card flip functionality with CSS transitions
     - Display front content by default and back content when flipped
     - Apply deck colors and name to card back using existing color constants
     - _Requirements: 3.2, 3.3, 3.4_
 
-  - [ ] 6.2 Create StudyInterface component for card navigation
+  - [x] 6.2 Create StudyInterface component for card navigation
     - Implement card navigation with next/previous controls
     - Add progress indicators showing current position in deck
     - Handle end-of-deck scenarios with restart options
     - Integrate with existing flashcardStorage.getCards method
     - _Requirements: 3.1, 3.5, 3.6_
 
-  - [ ] 6.3 Add keyboard shortcuts for study navigation
+  - [x] 6.3 Add keyboard shortcuts for study navigation
     - Implement spacebar for card flipping
     - Add arrow keys for navigation between cards
     - Include escape key to exit study mode
@@ -106,14 +106,14 @@
     - Test progress tracking and end-of-deck behavior
     - _Requirements: 3.1, 3.2, 3.3, 3.5, 3.6_
 
-- [ ] 7. Create main FlashcardApp component and routing
-  - [ ] 7.1 Create main FlashcardApp component
+- [x] 7. Create main FlashcardApp component and routing
+  - [x] 7.1 Create main FlashcardApp component
     - Build container component that manages routing between deck list and study mode
     - Implement state management for decks and current study session
     - Integrate with existing flashcardStorage utilities for data persistence
     - _Requirements: 4.1, 4.2, 4.3_
 
-  - [ ] 7.2 Add flashcard route to router configuration
+  - [x] 7.2 Add flashcard route to router configuration
     - Update App.tsx to include /flashcards route
     - Add navigation link to access flashcard application
     - Ensure consistent styling with existing application theme
@@ -125,39 +125,65 @@
     - Test data persistence using existing storage utilities
     - _Requirements: 1.1, 2.1, 3.1, 4.1, 4.2_
 
-- [ ] 8. Implement responsive design and accessibility
-  - [ ] 8.1 Add responsive layouts for mobile devices
+- [x] 8. Implement manual flashcard creation functionality
+  - [x] 8.1 Create CardEditor component for individual card editing
+    - Build form interface with front and back content inputs
+    - Add validation for required content on both sides
+    - Implement card preview functionality to show how card will look
+    - _Requirements: 1.5.3, 1.5.5_
+
+  - [x] 8.2 Create ManualDeckCreator component for deck creation workflow
+    - Build multi-step interface for deck name, color selection, and card creation
+    - Implement add/edit/remove functionality for individual cards
+    - Add validation to prevent saving empty decks
+    - Integrate with existing flashcardStorage utilities for saving
+    - _Requirements: 1.5.1, 1.5.2, 1.5.4, 1.5.6_
+
+  - [x] 8.3 Update DeckManager to include manual creation option
+    - Add "Create Manual Deck" button alongside CSV import
+    - Integrate ManualDeckCreator component into deck management flow
+    - Ensure consistent UI/UX with existing CSV import workflow
+    - _Requirements: 1.5.1, 1.5.6_
+
+  - [ ]* 8.4 Write unit tests for manual card creation components
+    - Test CardEditor validation and preview functionality
+    - Test ManualDeckCreator workflow and state management
+    - Test integration with existing storage utilities
+    - _Requirements: 1.5.1, 1.5.2, 1.5.3, 1.5.4, 1.5.5_
+
+- [ ] 9. Implement responsive design and accessibility
+  - [ ] 9.1 Add responsive layouts for mobile devices
     - Optimize deck list layout for mobile screens using Tailwind CSS
     - Ensure flashcards are properly sized on touch devices
     - Implement touch gestures for card flipping and navigation
     - _Requirements: 5.1, 5.2_
 
-  - [ ] 8.2 Implement accessibility features
+  - [ ] 9.2 Implement accessibility features
     - Add proper ARIA labels and roles for screen readers
     - Ensure keyboard navigation works throughout the application
     - Implement focus management for modal dialogs
     - _Requirements: 5.3, 5.4, 5.5_
 
-  - [ ]* 8.3 Write accessibility and responsive design tests
+  - [ ]* 9.3 Write accessibility and responsive design tests
     - Test keyboard navigation and screen reader compatibility
     - Test responsive layouts on various screen sizes
     - Test touch interactions on mobile devices
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 9. Add error handling and loading states
-  - [ ] 9.1 Implement comprehensive error handling
+- [ ] 10. Add error handling and loading states
+  - [ ] 10.1 Implement comprehensive error handling
     - Add error boundaries for component error recovery
     - Integrate with existing flashcardStorage error handling for localStorage issues
     - Display user-friendly error messages for all failure scenarios
     - _Requirements: 4.3, 4.4_
 
-  - [ ] 9.2 Add loading states and user feedback
+  - [ ] 10.2 Add loading states and user feedback
     - Implement loading indicators for CSV processing using existing CSV parser
     - Add success messages for deck creation and deletion
     - Show appropriate feedback for all user actions
     - _Requirements: 1.4, 5.5_
 
-  - [ ]* 9.3 Write tests for error handling and edge cases
+  - [ ]* 10.3 Write tests for error handling and edge cases
     - Test error boundary functionality
     - Test localStorage failure scenarios using existing storage utilities
     - Test user feedback and loading state displays

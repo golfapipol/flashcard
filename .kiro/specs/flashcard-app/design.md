@@ -59,6 +59,37 @@ The flashcard feature will be added as a new route (`/flashcards`) in the existi
   }
   ```
 
+#### 3.5. ManualDeckCreator Component
+- **Purpose**: Handles manual creation of flashcard decks without CSV import
+- **Responsibilities**:
+  - Provide form for deck name and color selection
+  - Allow adding/editing/removing individual cards
+  - Validate card content before saving
+  - Manage temporary card state during creation
+- **Props**:
+  ```typescript
+  interface ManualDeckCreatorProps {
+    onCreateDeck: (cards: Omit<Card, 'id'>[], deckName: string, deckColor: string) => void
+    onCancel: () => void
+  }
+  ```
+
+#### 3.6. CardEditor Component
+- **Purpose**: Individual card editing interface for manual creation
+- **Responsibilities**:
+  - Provide input fields for front and back content
+  - Validate card content
+  - Handle card preview functionality
+- **Props**:
+  ```typescript
+  interface CardEditorProps {
+    card?: { front: string; back: string }
+    onSave: (card: { front: string; back: string }) => void
+    onCancel: () => void
+    isEditing?: boolean
+  }
+  ```
+
 #### 4. StudyInterface Component
 - **Purpose**: Main study interface for flashcard interaction
 - **Responsibilities**:
@@ -158,6 +189,12 @@ Expected CSV format for import:
 - **Empty file**: Prompt user to select a valid file
 - **Missing columns**: Show specific validation error
 - **Parsing errors**: Graceful fallback with error details
+
+### Manual Card Creation Errors
+- **Empty card content**: Validate that both front and back have content
+- **Duplicate cards**: Warn user about potential duplicate content
+- **Empty deck**: Prevent saving decks with no cards
+- **Invalid deck name**: Validate deck name length and characters
 
 ### Storage Errors
 - **localStorage unavailable**: Display warning and continue with session-only storage

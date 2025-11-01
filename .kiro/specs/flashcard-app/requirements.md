@@ -18,6 +18,19 @@ This document outlines the requirements for a flashcard web application built wi
 4. WHEN a deck is successfully created THEN the system SHALL display a confirmation message with the number of cards imported
 5. WHEN importing a CSV THEN the system SHALL validate that each row has at least two columns with content
 
+### Requirement 1.5
+
+**User Story:** As a student, I want to create flashcards manually without importing CSV files, so that I can quickly add individual cards or create small decks without needing external files.
+
+#### Acceptance Criteria
+
+1. WHEN a user chooses to create a manual deck THEN the system SHALL provide a form to enter deck name and select color
+2. WHEN creating a manual deck THEN the system SHALL allow the user to add individual flashcards with front and back content
+3. WHEN adding a card manually THEN the system SHALL validate that both front and back content are provided
+4. WHEN a user is creating cards manually THEN the system SHALL allow them to add multiple cards before saving the deck
+5. WHEN a user is adding cards manually THEN the system SHALL provide options to edit or remove cards before finalizing the deck
+6. WHEN a manual deck is created THEN the system SHALL save it with the same structure as CSV-imported decks
+
 ### Requirement 2
 
 **User Story:** As a user, I want to manage multiple flashcard decks with custom names and colors, so that I can organize my study materials by subject or topic with visual distinction.
