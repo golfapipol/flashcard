@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DECK_COLORS, DeckColor } from '../../types/flashcard';
+import { useLoading, LoadingButton } from './LoadingContext';
 
 interface DeckCreationDialogProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
   const [deckName, setDeckName] = useState(defaultName);
   const [selectedColor, setSelectedColor] = useState<DeckColor>(DECK_COLORS[0]);
   const [nameError, setNameError] = useState('');
+  const { isLoading } = useLoading();
 
   // Reset form when dialog opens/closes or defaultName changes
   useEffect(() => {
@@ -190,17 +192,20 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-          <button
+          <LoadingButton
             type="button"
             onClick={handleCancel}
+            disabled={isLoading('createDeck')}
             className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
           >
             Cancel
-          </button>
-          <button
+          </LoadingButton>
+          <LoadingButton
             type="submit"
             onClick={handleSubmit}
             disabled={!deckName.trim() || !!nameError}
+            isLoading={isLoading('createDeck')}
+            loadingText="Creating..."
             className={`
               px-4 py-2 rounded-md transition-colors
               ${!deckName.trim() || !!nameError
@@ -210,7 +215,7 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
             `}
           >
             Create Deck
-          </button>
+          </LoadingButton>
         </div>
       </div>
     </div>

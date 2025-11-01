@@ -1,18 +1,105 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Deck, Card } from '../../types/flashcard';
+import { flashcardStorage } from '../../lib/flashcardStorage';
+import { DeckManager } from './DeckManager';
+import { StudyInterface } from './StudyInterface';
+import { ErrorBoundary } from './ErrorBoundary';
+import { ErrorProvider, useErrorHandler } from './ErrorContext';
+import { LoadingProvider } from './LoadingContext';
 
+interface StudySession {
+  deck: Deck;
+  cards: Card[];
+}
+
+const FlashcardAppContent: React.FC = () => {
+  const [currentSession, setCurrentSession] = useState<StudySession | null>(null);
+  const { showStorageError, addError } = useErrorHandler();
+
+  // Check storage health on component mount
+  useEffect(() => {
+    const healthCheck = flashcardStorage.checkStorageHealth();
+    if (!healthCheck.available) {
+      showStorageError('localStorage is not available. Your data will not be saved between sessions.');
+    } else if (healthCheck.warning) {
+      addError({
+        type: 'warning',
+        title: 'Storage Warning',
+        message: healthCheck.warning
+      });
+    }
+  }, [showStorageError, addError]);
+
+  const handleSelectDeck = (deckId: string) => {
+    try {
+      const deck = flashcardStorage.getDeck(deckId);
+      if (!deck) {
+        addError({
+          type: 'error',
+          title: 'Deck Not Found',
+          message: 'The selected deck could not be found. It may have been deleted.'
+        });
+        return;
+      }
+
+      const cards = flashcardStorage.getCards(deckId);
+      if (cards.length === 0) {
+        addError({
+          type: 'warning',
+          title: 'Empty Deck',
+          message: 'This deck has no cards to study. Add some cards first.'
+        });
+        return;
+      }
+
+      setCurrentSession({ deck, cards });
+    } catch (error) {
+      addError({
+        type: 'error',
+        title: 'Failed to Load Deck',
+        message: error instanceof Error ? error.message : 'An unexpected error occurred while loading the deck.'
+      });
+    }
+  };
+
+  const handleExitStudy = () => {
+    setCurrentSession(null);
+  };
+
+  // If in study mode, render the study interface
+  if (currentSession) {
+    return (
+      <StudyInterface
+        deck={currentSession.deck}
+        cards={currentSession.cards}
+        onExit={handleExitStudy}
+      />
+    );
+  }
+
+  // Otherwise, render the deck management interface
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <DeckManager onSelectDeck={handleSelectDeck} />
+    </div>
+  );
+};
+
+// Main component with error boundary and context
 const FlashcardApp: React.FC = () => {
   return (
-    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div className="px-4 py-6 sm:px-0">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Flashcard Application</h2>
-          <p className="text-gray-600">
-            This is a placeholder for the flashcard application. 
-            The full functionality will be implemented in subsequent tasks.
-          </p>
-        </div>
-      </div>
-    </div>
+    <ErrorProvider>
+      <LoadingProvider>
+        <ErrorBoundary
+          onError={(error, errorInfo) => {
+            console.error('FlashcardApp Error Boundary:', error, errorInfo);
+            // Could integrate with error reporting service here
+          }}
+        >
+          <FlashcardAppContent />
+        </ErrorBoundary>
+      </LoadingProvider>
+    </ErrorProvider>
   );
 };
 

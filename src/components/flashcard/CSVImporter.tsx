@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { CSVParser } from '../../lib/csvParser';
 import { CSVImportResult } from '../../types/flashcard';
+import { LoadingSpinner } from './LoadingContext';
 
 interface CSVImporterProps {
   onImport: (cards: { front: string; back: string }[], fileName: string) => void;
@@ -106,8 +107,9 @@ export const CSVImporter: React.FC<CSVImporterProps> = ({ onImport, onError }) =
       >
         {isProcessing ? (
           <div className="flex flex-col items-center space-y-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <p className="text-gray-600">Processing CSV file...</p>
+            <LoadingSpinner size="lg" />
+            <p className="text-gray-600 font-medium">Processing CSV file...</p>
+            <p className="text-sm text-gray-500">Parsing and validating your flashcard data</p>
           </div>
         ) : (
           <div className="flex flex-col items-center space-y-4">

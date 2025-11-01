@@ -3,6 +3,9 @@ import { Deck } from '../../types/flashcard';
 import { flashcardStorage } from '../../lib/flashcardStorage';
 import { CSVImporter } from './CSVImporter';
 import { DeckCreationDialog } from './DeckCreationDialog';
+import { ManualDeckCreator } from './ManualDeckCreator';
+import { useErrorHandler } from './ErrorContext';
+import { useLoading, LoadingButton } from './LoadingContext';
 
 interface DeckManagerProps {
   onSelectDeck: (deckId: string) => void;
@@ -13,13 +16,15 @@ interface ConfirmationDialogProps {
   deckName: string;
   onConfirm: () => void;
   onCancel: () => void;
+  isDeleting?: boolean;
 }
 
 const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   isOpen,
   deckName,
   onConfirm,
-  onCancel
+  onCancel,
+  isDeleting = false
 }) => {
   if (!isOpen) return null;
 
@@ -37,20 +42,23 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         </div>
         
         <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-          <button
+          <LoadingButton
             type="button"
             onClick={onCancel}
+            disabled={isDeleting}
             className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
           >
             Cancel
-          </button>
-          <button
+          </LoadingButton>
+          <LoadingButton
             type="button"
             onClick={onConfirm}
+            isLoading={isDeleting}
+            loadingText="Deleting..."
             className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
           >
             Delete Deck
-          </button>
+          </LoadingButton>
         </div>
       </div>
     </div>
@@ -61,11 +69,12 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [showImporter, setShowImporter] = useState(false);
   const [showDeckDialog, setShowDeckDialog] = useState(false);
+  const [showManualCreator, setShowManualCreator] = useState(false);
   const [importedCards, setImportedCards] = useState<{ front: string; back: string }[]>([]);
   const [defaultDeckName, setDefaultDeckName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ deckId: string; deckName: string } | null>(null);
+  const { addError, showSuccess, showStorageError } = useErrorHandler();
+  const { setLoading, isLoading } = useLoading();
 
   // Load decks on component mount
   useEffect(() => {
@@ -77,7 +86,7 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
       const allDecks = flashcardStorage.getAllDecks();
       setDecks(allDecks);
     } catch (error) {
-      setError('Failed to load decks. Please try refreshing the page.');
+      showStorageError('Failed to load decks. This might be due to corrupted data or storage issues.');
       console.error('Error loading decks:', error);
     }
   };
@@ -87,16 +96,22 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
     setDefaultDeckName(fileName);
     setShowImporter(false);
     setShowDeckDialog(true);
-    setError(null);
   };
 
   const handleImportError = (errorMessage: string) => {
-    setError(errorMessage);
-    setSuccess(null);
+    addError({
+      type: 'error',
+      title: 'CSV Import Failed',
+      message: errorMessage
+    });
   };
 
-  const handleCreateDeck = (name: string, color: string) => {
+  const handleCreateDeck = async (name: string, color: string) => {
+    setLoading('createDeck', true);
+    
     try {
+      // Add small delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 500));
       // Generate unique ID
       const deckId = `deck_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
@@ -131,15 +146,70 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
       setDefaultDeckName('');
       
       // Show success message
-      setSuccess(`Successfully created deck "${name}" with ${cards.length} cards`);
-      setError(null);
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(null), 3000);
+      showSuccess(`Successfully created deck "${name}" with ${cards.length} cards`);
       
     } catch (error) {
-      setError('Failed to create deck. Please try again.');
+      addError({
+        type: 'error',
+        title: 'Failed to Create Deck',
+        message: error instanceof Error ? error.message : 'An unexpected error occurred while creating the deck.'
+      });
       console.error('Error creating deck:', error);
+    } finally {
+      setLoading('createDeck', false);
+    }
+  };
+
+  const handleCreateManualDeck = async (cards: { front: string; back: string }[], name: string, color: string) => {
+    setLoading('createManualDeck', true);
+    
+    try {
+      // Add small delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 300));
+      // Generate unique ID
+      const deckId = `deck_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Create deck
+      const newDeck: Deck = {
+        id: deckId,
+        name,
+        color,
+        createdAt: new Date(),
+        cardCount: cards.length
+      };
+
+      // Save deck
+      flashcardStorage.saveDeck(newDeck);
+
+      // Create and save cards
+      const deckCards = cards.map((cardData, index) => ({
+        id: `card_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+        deckId,
+        front: cardData.front,
+        back: cardData.back,
+        createdAt: new Date()
+      }));
+
+      flashcardStorage.saveCards(deckId, deckCards);
+
+      // Update local state
+      loadDecks();
+      
+      // Hide manual creator
+      setShowManualCreator(false);
+      
+      // Show success message
+      showSuccess(`Successfully created deck "${name}" with ${cards.length} cards`);
+      
+    } catch (error) {
+      addError({
+        type: 'error',
+        title: 'Failed to Create Deck',
+        message: error instanceof Error ? error.message : 'An unexpected error occurred while creating the deck.'
+      });
+      console.error('Error creating deck:', error);
+    } finally {
+      setLoading('createManualDeck', false);
     }
   };
 
@@ -147,21 +217,26 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
     setConfirmDelete({ deckId, deckName });
   };
 
-  const confirmDeckDeletion = () => {
+  const confirmDeckDeletion = async () => {
     if (!confirmDelete) return;
     
+    setLoading('deleteDeck', true);
+    
     try {
+      // Add small delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 200));
       flashcardStorage.deleteDeck(confirmDelete.deckId);
       loadDecks();
-      setSuccess(`Successfully deleted deck "${confirmDelete.deckName}"`);
-      setError(null);
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(null), 3000);
+      showSuccess(`Successfully deleted deck "${confirmDelete.deckName}"`);
     } catch (error) {
-      setError('Failed to delete deck. Please try again.');
+      addError({
+        type: 'error',
+        title: 'Failed to Delete Deck',
+        message: error instanceof Error ? error.message : 'An unexpected error occurred while deleting the deck.'
+      });
       console.error('Error deleting deck:', error);
     } finally {
+      setLoading('deleteDeck', false);
       setConfirmDelete(null);
     }
   };
@@ -180,45 +255,30 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
         </p>
       </div>
 
-      {/* Error/Success Messages */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-          <div className="flex">
-            <svg className="w-5 h-5 text-red-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <p className="text-red-700">{error}</p>
-          </div>
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
-          <div className="flex">
-            <svg className="w-5 h-5 text-green-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <p className="text-green-700">{success}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Import Section */}
-      {!showImporter && decks.length === 0 && (
+      {/* Empty State */}
+      {!showImporter && !showManualCreator && decks.length === 0 && (
         <div className="text-center py-12">
           <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
           <h3 className="text-xl font-medium text-gray-900 mb-2">No decks yet</h3>
           <p className="text-gray-600 mb-6">
-            Get started by importing your first CSV file to create a flashcard deck.
+            Get started by creating your first flashcard deck. You can import from a CSV file or create cards manually.
           </p>
-          <button
-            onClick={() => setShowImporter(true)}
-            className="px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors font-medium"
-          >
-            Import CSV File
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <LoadingButton
+              onClick={() => setShowImporter(true)}
+              className="px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors font-medium"
+            >
+              Import CSV File
+            </LoadingButton>
+            <LoadingButton
+              onClick={() => setShowManualCreator(true)}
+              className="px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors font-medium"
+            >
+              Create Manual Deck
+            </LoadingButton>
+          </div>
         </div>
       )}
 
@@ -240,6 +300,27 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
         </div>
       )}
 
+      {/* Manual Deck Creator Section */}
+      {showManualCreator && (
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Create Manual Deck</h2>
+            <button
+              onClick={() => setShowManualCreator(false)}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <ManualDeckCreator 
+            onCreateDeck={handleCreateManualDeck} 
+            onCancel={() => setShowManualCreator(false)} 
+          />
+        </div>
+      )}
+
       {/* Deck Grid */}
       {decks.length > 0 && (
         <div>
@@ -247,12 +328,20 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
             <h2 className="text-xl font-semibold text-gray-900">
               Your Decks ({decks.length})
             </h2>
-            <button
-              onClick={() => setShowImporter(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-            >
-              Import New Deck
-            </button>
+            <div className="flex space-x-3">
+              <LoadingButton
+                onClick={() => setShowImporter(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Import CSV
+              </LoadingButton>
+              <LoadingButton
+                onClick={() => setShowManualCreator(true)}
+                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+              >
+                Create Manual Deck
+              </LoadingButton>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -290,7 +379,7 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
                   
                   {/* Action Buttons */}
                   <div className="flex space-x-2">
-                    <button
+                    <LoadingButton
                       onClick={() => onSelectDeck(deck.id)}
                       disabled={deck.cardCount === 0}
                       className={`
@@ -302,7 +391,7 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
                       `}
                     >
                       {deck.cardCount === 0 ? 'No Cards' : 'Study'}
-                    </button>
+                    </LoadingButton>
                     <button
                       onClick={() => handleDeleteDeck(deck.id, deck.name)}
                       className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
@@ -339,6 +428,7 @@ export const DeckManager: React.FC<DeckManagerProps> = ({ onSelectDeck }) => {
         deckName={confirmDelete?.deckName || ''}
         onConfirm={confirmDeckDeletion}
         onCancel={cancelDeckDeletion}
+        isDeleting={isLoading('deleteDeck')}
       />
     </div>
   );
