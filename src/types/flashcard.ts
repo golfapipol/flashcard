@@ -40,7 +40,35 @@ export type DeckColor = typeof DECK_COLORS[number];
 export interface FlashcardStorage {
   decks: Record<string, Deck>;
   cards: Record<string, Card[]>; // Keyed by deckId
+  mixingSessions: CardMixingSession[]; // Recent mixing sessions
   version: string;
+}
+
+/**
+ * Mixed card interface for card mixing functionality
+ */
+export interface MixedCard extends Card {
+  deckName: string;
+  deckColor: string;
+  position: number; // Position in the mixed layout
+}
+
+/**
+ * Card mixing session interface
+ */
+export interface CardMixingSession {
+  id: string;
+  selectedDeckIds: string[];
+  cardCount: number;
+  timestamp: Date;
+}
+
+/**
+ * Grid layout configuration
+ */
+export interface GridLayout {
+  rows: number;
+  cols: number;
 }
 
 /**

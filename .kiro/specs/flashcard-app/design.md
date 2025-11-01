@@ -122,6 +122,38 @@ The flashcard feature will be added as a new route (`/flashcards`) in the existi
   }
   ```
 
+#### 6. CardMixer Component
+- **Purpose**: Interface for selecting multiple decks and drawing mixed cards
+- **Responsibilities**:
+  - Display deck selection with checkboxes
+  - Handle number of cards input with validation
+  - Coordinate card drawing from multiple decks
+  - Navigate to mixed card display
+- **Props**:
+  ```typescript
+  interface CardMixerProps {
+    decks: Deck[]
+    onMixCards: (selectedDeckIds: string[], cardCount: number) => void
+    onBack: () => void
+  }
+  ```
+
+#### 7. MixedCardDisplay Component
+- **Purpose**: Display mixed cards in a tarot-like grid layout
+- **Responsibilities**:
+  - Render cards in responsive grid layout
+  - Handle individual card interactions
+  - Show deck identification for each card
+  - Provide reshuffle and navigation options
+- **Props**:
+  ```typescript
+  interface MixedCardDisplayProps {
+    mixedCards: MixedCard[]
+    onReshuffle: () => void
+    onBack: () => void
+  }
+  ```
+
 ### Data Models
 
 #### Deck Interface
@@ -143,6 +175,25 @@ interface Card {
   front: string
   back: string
   createdAt: Date
+}
+```
+
+#### MixedCard Interface
+```typescript
+interface MixedCard extends Card {
+  deckName: string
+  deckColor: string
+  position: number // Position in the mixed layout
+}
+```
+
+#### CardMixingState Interface
+```typescript
+interface CardMixingState {
+  selectedDeckIds: string[]
+  requestedCardCount: number
+  mixedCards: MixedCard[]
+  isShuffling: boolean
 }
 ```
 
@@ -170,7 +221,15 @@ The application uses localStorage with the following structure:
 interface FlashcardStorage {
   decks: Record<string, Deck>
   cards: Record<string, Card[]> // Keyed by deckId
+  mixingSessions: MixingSession[] // Recent mixing sessions for quick access
   version: string
+}
+
+interface MixingSession {
+  id: string
+  selectedDeckIds: string[]
+  cardCount: number
+  timestamp: Date
 }
 ```
 
@@ -181,6 +240,36 @@ Expected CSV format for import:
 - Second column: Back of card (answer/explanation)
 - Additional columns: Ignored
 - First row: Can be headers (will be detected and skipped if non-content)
+
+## Card Mixing Algorithm
+
+### Random Card Selection Strategy
+
+The card mixing feature uses a weighted random selection algorithm to ensure fair distribution across selected decks:
+
+1. **Deck Pool Creation**: Combine all cards from selected decks into a single pool
+2. **Shuffle Algorithm**: Use Fisher-Yates shuffle for true randomness
+3. **Selection Process**: Draw the requested number of cards without replacement
+4. **Position Assignment**: Assign grid positions based on tarot-like layout patterns
+
+### Layout Patterns
+
+Different grid layouts based on card count:
+- **1-3 cards**: Single row layout
+- **4-6 cards**: 2x3 grid layout
+- **7-9 cards**: 3x3 grid layout
+- **10+ cards**: Dynamic grid with responsive columns
+
+### Mixing Utilities
+
+```typescript
+interface CardMixingUtils {
+  shuffleCards: (cards: Card[]) => Card[]
+  selectRandomCards: (cards: Card[], count: number) => Card[]
+  createMixedCards: (cards: Card[], decks: Deck[]) => MixedCard[]
+  calculateGridLayout: (cardCount: number) => { rows: number; cols: number }
+}
+```
 
 ## Error Handling
 
@@ -205,6 +294,12 @@ Expected CSV format for import:
 - **Invalid deck selection**: Redirect to deck list with error message
 - **Missing cards**: Handle empty deck state gracefully
 
+### Card Mixing Errors
+- **No decks selected**: Prevent mixing with validation message
+- **Invalid card count**: Validate against available cards from selected decks
+- **Empty selected decks**: Handle case where selected decks have no cards
+- **Insufficient cards**: Adjust requested count to available cards with user notification
+
 ## Testing Strategy
 
 ### Unit Testing
@@ -215,6 +310,7 @@ Expected CSV format for import:
 ### Integration Testing
 - **CSV Import Flow**: End-to-end testing of file selection through deck creation
 - **Study Session Flow**: Complete user journey from deck selection to card study
+- **Card Mixing Flow**: End-to-end testing of deck selection through mixed card display
 - **Storage Integration**: Test data persistence and retrieval
 
 ### Test Files Structure
@@ -224,12 +320,15 @@ src/components/flashcard/__tests__/
 ├── DeckManager.test.tsx
 ├── CSVImporter.test.tsx
 ├── StudyInterface.test.tsx
-└── FlashCard.test.tsx
+├── FlashCard.test.tsx
+├── CardMixer.test.tsx
+└── MixedCardDisplay.test.tsx
 
 src/lib/__tests__/
 ├── flashcardStorage.test.ts
 ├── csvParser.test.ts
-└── flashcardUtils.test.ts
+├── flashcardUtils.test.ts
+└── cardMixingUtils.test.ts
 ```
 
 ### Accessibility Testing

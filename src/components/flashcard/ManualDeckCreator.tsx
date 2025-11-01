@@ -120,10 +120,10 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
   };
 
   const renderDeckInfoStep = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Manual Deck</h2>
-        <p className="text-gray-600">Set up your deck name and color, then add flashcards</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Create Manual Deck</h2>
+        <p className="text-sm sm:text-base text-gray-600">Set up your deck name and color, then add flashcards</p>
       </div>
 
       {/* Deck Name Input */}
@@ -156,14 +156,14 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
         <label className="block text-sm font-medium text-gray-700 mb-3">
           Deck Color
         </label>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 sm:gap-3">
           {DECK_COLORS.map((color) => (
             <button
               key={color}
               type="button"
               onClick={() => setSelectedColor(color)}
               className={`
-                w-full h-12 rounded-md border-2 transition-all duration-200
+                w-full h-10 sm:h-12 rounded-md border-2 transition-all duration-200
                 ${selectedColor === color 
                   ? 'border-gray-800 scale-105 shadow-md' 
                   : 'border-gray-200 hover:border-gray-400 hover:scale-102'
@@ -174,7 +174,7 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
             >
               {selectedColor === color && (
                 <svg 
-                  className="w-6 h-6 text-white mx-auto drop-shadow-sm" 
+                  className="w-4 h-4 sm:w-6 sm:h-6 text-white mx-auto drop-shadow-sm" 
                   fill="currentColor" 
                   viewBox="0 0 20 20"
                 >
@@ -212,11 +212,11 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end space-x-3">
+      <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-3 sm:space-x-0">
         <LoadingButton
           type="button"
           onClick={handleCancel}
-          className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+          className="w-full sm:w-auto px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors order-2 sm:order-1"
         >
           Cancel
         </LoadingButton>
@@ -225,7 +225,7 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
           onClick={handleNextStep}
           disabled={!deckName.trim() || !!nameError}
           className={`
-            px-4 py-2 rounded-md transition-colors
+            w-full sm:w-auto px-4 py-2 rounded-md transition-colors order-1 sm:order-2
             ${!deckName.trim() || !!nameError
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-blue-500 text-white hover:bg-blue-600'
@@ -239,17 +239,17 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
   );
 
   const renderAddCardsStep = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Add Flashcards</h2>
-          <p className="text-gray-600">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Add Flashcards</h2>
+          <p className="text-sm sm:text-base text-gray-600">
             Deck: <span className="font-medium">{deckName}</span> • 
             <span className="ml-1">{cards.length} card{cards.length !== 1 ? 's' : ''}</span>
           </p>
         </div>
         <div 
-          className="w-6 h-6 rounded-full"
+          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0 ml-3"
           style={{ backgroundColor: selectedColor }}
         />
       </div>
@@ -257,12 +257,12 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
       {/* Cards List */}
       {cards.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-lg font-medium text-gray-900">Cards in this deck:</h3>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900">Cards in this deck:</h3>
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {cards.map((card, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-md border"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-md border gap-2 sm:gap-0"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
@@ -272,16 +272,16 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
                     {card.back}
                   </p>
                 </div>
-                <div className="flex space-x-2 ml-4">
+                <div className="flex gap-2 sm:gap-2 sm:ml-4 flex-shrink-0">
                   <button
                     onClick={() => handleEditCard(index)}
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    className="flex-1 sm:flex-none px-3 py-1 text-blue-600 hover:text-blue-800 text-sm font-medium bg-blue-50 hover:bg-blue-100 rounded transition-colors"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleRemoveCard(index)}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                    className="flex-1 sm:flex-none px-3 py-1 text-red-600 hover:text-red-800 text-sm font-medium bg-red-50 hover:bg-red-100 rounded transition-colors"
                   >
                     Remove
                   </button>
@@ -320,21 +320,21 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-between">
+      <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0">
         <LoadingButton
           type="button"
           onClick={() => setCurrentStep('deck-info')}
           disabled={isLoading('createManualDeck')}
-          className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+          className="w-full sm:w-auto px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors order-3 sm:order-1"
         >
           Back
         </LoadingButton>
-        <div className="flex space-x-3">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-3 sm:space-x-0">
           <LoadingButton
             type="button"
             onClick={handleCancel}
             disabled={isLoading('createManualDeck')}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors order-2 sm:order-1"
           >
             Cancel
           </LoadingButton>
@@ -345,14 +345,15 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
             isLoading={isLoading('createManualDeck')}
             loadingText="Creating..."
             className={`
-              px-4 py-2 rounded-md transition-colors
+              w-full sm:w-auto px-4 py-2 rounded-md transition-colors order-1 sm:order-2
               ${cards.length === 0
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-green-500 text-white hover:bg-green-600'
               }
             `}
           >
-            Create Deck ({cards.length} card{cards.length !== 1 ? 's' : ''})
+            <span className="hidden sm:inline">Create Deck ({cards.length} card{cards.length !== 1 ? 's' : ''})</span>
+            <span className="sm:hidden">Create ({cards.length})</span>
           </LoadingButton>
         </div>
       </div>
@@ -388,7 +389,7 @@ export const ManualDeckCreator: React.FC<ManualDeckCreatorProps> = ({
   );
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-4 sm:p-6">
       {currentStep === 'deck-info' && renderDeckInfoStep()}
       {currentStep === 'add-cards' && renderAddCardsStep()}
       {currentStep === 'edit-card' && renderEditCardStep()}

@@ -1,4 +1,4 @@
-import { Deck, Card, FlashcardStorage } from '../types/flashcard';
+import { Deck, Card, FlashcardStorage, CardMixingSession } from '../types/flashcard';
 
 const STORAGE_KEY = 'flashcard-app-data';
 const STORAGE_VERSION = '1.0.0';
@@ -59,6 +59,16 @@ export class FlashcardStorageManager {
         });
       });
 
+      // Convert mixing session timestamps
+      if (parsed.mixingSessions) {
+        parsed.mixingSessions.forEach((session: any) => {
+          session.timestamp = new Date(session.timestamp);
+        });
+      } else {
+        // Initialize mixing sessions if not present (for backward compatibility)
+        parsed.mixingSessions = [];
+      }
+
       return parsed;
     } catch (error) {
       console.error('Error parsing storage data:', error);
@@ -73,6 +83,7 @@ export class FlashcardStorageManager {
     const initialData: FlashcardStorage = {
       decks: {},
       cards: {},
+      mixingSessions: [],
       version: STORAGE_VERSION
     };
     this.saveStorageData(initialData);
@@ -192,6 +203,73 @@ export class FlashcardStorageManager {
     if (this.isStorageAvailable()) {
       localStorage.removeItem(STORAGE_KEY);
     }
+  }
+
+  /**
+   * Get all mixing sessions
+   */
+  public getMixingSessions(): CardMixingSession[] {
+    try {
+      const data = this.getStorageData();
+      return data.mixingSessions || [];
+    } catch (error) {
+      console.error('Error getting mixing sessions:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Save a new mixing session
+   */
+  public saveMixingSession(session: Omit<CardMixingSession, 'id' | 'timestamp'>): CardMixingSession {
+    const data = this.getStorageData();
+    
+    const newSession: CardMixingSession = {
+      ...session,
+      id: `mixing_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date()
+    };
+
+    // Add to beginning of array (most recent first)
+    data.mixingSessions = [newSession, ...(data.mixingSessions || [])];
+    
+    // Keep only the last 10 sessions to prevent storage bloat
+    data.mixingSessions = data.mixingSessions.slice(0, 10);
+    
+    this.saveStorageData(data);
+    return newSession;
+  }
+
+  /**
+   * Delete a mixing session
+   */
+  public deleteMixingSession(sessionId: string): void {
+    const data = this.getStorageData();
+    data.mixingSessions = (data.mixingSessions || []).filter(session => session.id !== sessionId);
+    this.saveStorageData(data);
+  }
+
+  /**
+   * Clear old mixing sessions (older than 30 days)
+   */
+  public cleanupOldMixingSessions(): void {
+    const data = this.getStorageData();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    data.mixingSessions = (data.mixingSessions || []).filter(
+      session => session.timestamp > thirtyDaysAgo
+    );
+    
+    this.saveStorageData(data);
+  }
+
+  /**
+   * Get recent mixing sessions (last 5)
+   */
+  public getRecentMixingSessions(): CardMixingSession[] {
+    const sessions = this.getMixingSessions();
+    return sessions.slice(0, 5);
   }
 
   /**

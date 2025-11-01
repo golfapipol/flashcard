@@ -70,6 +70,22 @@ This document outlines the requirements for a flashcard web application built wi
 
 ### Requirement 5
 
+**User Story:** As a student, I want to mix cards from multiple decks and draw a specific number of cards, so that I can create custom study sessions combining different topics like a tarot card reading experience.
+
+#### Acceptance Criteria
+
+1. WHEN a user selects the card mixing feature THEN the system SHALL display a list of all available decks with checkboxes for selection
+2. WHEN selecting decks for mixing THEN the system SHALL allow the user to choose multiple decks from the available options
+3. WHEN decks are selected THEN the system SHALL provide an input field to specify the number of cards to draw
+4. WHEN the number of cards exceeds the total available cards from selected decks THEN the system SHALL display a warning and limit the input to the maximum available
+5. WHEN the user confirms the card mix THEN the system SHALL randomly draw the specified number of cards from the selected decks
+6. WHEN cards are drawn THEN the system SHALL display them in a grid layout similar to tarot card spreads
+7. WHEN viewing mixed cards THEN the system SHALL show each card with its deck color and name for identification
+8. WHEN a mixed card is clicked THEN the system SHALL flip the card to reveal the back side while maintaining the tarot-like presentation
+9. WHEN in card mixing mode THEN the system SHALL provide options to reshuffle or return to deck selection
+
+### Requirement 6
+
 **User Story:** As a user, I want a responsive and intuitive interface, so that I can use the application effectively on different devices.
 
 #### Acceptance Criteria

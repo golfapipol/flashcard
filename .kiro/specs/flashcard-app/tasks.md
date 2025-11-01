@@ -151,14 +151,14 @@
     - Test integration with existing storage utilities
     - _Requirements: 1.5.1, 1.5.2, 1.5.3, 1.5.4, 1.5.5_
 
-- [ ] 9. Implement responsive design and accessibility
-  - [ ] 9.1 Add responsive layouts for mobile devices
+- [x] 9. Implement responsive design and accessibility
+  - [x] 9.1 Add responsive layouts for mobile devices
     - Optimize deck list layout for mobile screens using Tailwind CSS
     - Ensure flashcards are properly sized on touch devices
     - Implement touch gestures for card flipping and navigation
     - _Requirements: 5.1, 5.2_
 
-  - [ ] 9.2 Implement accessibility features
+  - [x] 9.2 Implement accessibility features
     - Add proper ARIA labels and roles for screen readers
     - Ensure keyboard navigation works throughout the application
     - Implement focus management for modal dialogs
@@ -188,3 +188,46 @@
     - Test localStorage failure scenarios using existing storage utilities
     - Test user feedback and loading state displays
     - _Requirements: 4.3, 4.4, 5.5_
+
+- [x] 11. Implement card mixing functionality
+  - [x] 11.1 Create card mixing utility functions
+    - Implement Fisher-Yates shuffle algorithm for random card selection
+    - Create function to combine cards from multiple decks
+    - Add utility to calculate grid layout based on card count
+    - Create MixedCard interface implementation with deck metadata
+    - _Requirements: 5.1, 5.5, 5.7_
+
+  - [x] 11.2 Create CardMixer component for deck selection
+    - Build interface with checkboxes for multiple deck selection
+    - Add input field for specifying number of cards to draw
+    - Implement validation to prevent requesting more cards than available
+    - Add visual feedback for selected decks and card count limits
+    - _Requirements: 5.1, 5.2, 5.3, 5.4_
+
+  - [x] 11.3 Create MixedCardDisplay component for tarot-like layout
+    - Implement responsive grid layout for mixed cards
+    - Display cards with deck identification (color and name)
+    - Add individual card flip functionality within the grid
+    - Include reshuffle and navigation options
+    - _Requirements: 5.6, 5.7, 5.8, 5.9_
+
+  - [x] 11.4 Integrate card mixing into main FlashcardApp navigation
+    - Add "Mix Cards" option to main deck management interface
+    - Implement routing between deck selection, card mixing, and mixed display
+    - Update FlashcardApp state management to handle mixing sessions
+    - Ensure consistent navigation flow with existing study interface
+    - _Requirements: 5.1, 5.9_
+
+  - [x] 11.5 Add card mixing session persistence
+    - Extend flashcardStorage to save recent mixing sessions
+    - Implement quick access to previous mixing configurations
+    - Add option to save favorite mixing combinations
+    - Handle storage cleanup for old mixing sessions
+    - _Requirements: 5.1, 5.9_
+
+  - [ ]* 11.6 Write unit tests for card mixing functionality
+    - Test shuffle algorithm and random selection utilities
+    - Test CardMixer component validation and deck selection
+    - Test MixedCardDisplay grid layout and card interactions
+    - Test mixing session persistence and retrieval
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9_

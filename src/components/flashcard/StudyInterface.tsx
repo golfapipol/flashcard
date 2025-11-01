@@ -99,12 +99,12 @@ export const StudyInterface: React.FC<StudyInterfaceProps> = ({
   if (!cards.length) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">No Cards Found</h2>
-          <p className="text-gray-600 mb-6">This deck doesn't contain any cards yet.</p>
+        <div className="text-center max-w-md mx-auto">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">No Cards Found</h2>
+          <p className="text-sm sm:text-base text-gray-600 mb-6">This deck doesn't contain any cards yet.</p>
           <button
             onClick={onExit}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Back to Decks
           </button>
@@ -117,21 +117,21 @@ export const StudyInterface: React.FC<StudyInterfaceProps> = ({
   if (isComplete) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Deck Complete!</h2>
-          <p className="text-gray-600 mb-6">
+        <div className="text-center max-w-md mx-auto">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Deck Complete!</h2>
+          <p className="text-sm sm:text-base text-gray-600 mb-6">
             You've studied all {cards.length} cards in "{deck.name}".
           </p>
-          <div className="space-x-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-center">
             <button
               onClick={handleRestart}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               Study Again
             </button>
             <button
               onClick={onExit}
-              className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="w-full sm:w-auto px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
             >
               Back to Decks
             </button>
@@ -144,27 +144,36 @@ export const StudyInterface: React.FC<StudyInterfaceProps> = ({
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header with deck info and exit button */}
-      <div className="bg-white shadow-sm border-b border-gray-200 p-4">
+      <header className="bg-white shadow-sm border-b border-gray-200 p-3 sm:p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-800">{deck.name}</h1>
-            <p className="text-sm text-gray-600">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-xl font-semibold text-gray-800 truncate">{deck.name}</h1>
+            <p className="text-xs sm:text-sm text-gray-600" aria-live="polite">
               Card {currentCardIndex + 1} of {cards.length}
             </p>
           </div>
           <button
             onClick={onExit}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-sm sm:text-base flex-shrink-0 ml-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Exit study session and return to deck list"
           >
-            Exit Study
+            <span className="hidden sm:inline">Exit Study</span>
+            <span className="sm:hidden">Exit</span>
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Progress bar */}
-      <div className="bg-white border-b border-gray-200 p-4">
+      <div className="bg-white border-b border-gray-200 p-3 sm:p-4">
         <div className="max-w-4xl mx-auto">
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="w-full bg-gray-200 rounded-full h-2"
+            role="progressbar"
+            aria-valuenow={currentCardIndex + 1}
+            aria-valuemin={1}
+            aria-valuemax={cards.length}
+            aria-label={`Study progress: ${currentCardIndex + 1} of ${cards.length} cards`}
+          >
             <div
               className="h-2 rounded-full transition-all duration-300"
               style={{
@@ -177,7 +186,7 @@ export const StudyInterface: React.FC<StudyInterfaceProps> = ({
       </div>
 
       {/* Main card area */}
-      <div className="flex-1 flex items-center justify-center p-4">
+      <main className="flex-1 flex items-center justify-center p-4" role="main">
         <div className="w-full max-w-md">
           <FlashCard
             card={currentCard}
@@ -185,51 +194,60 @@ export const StudyInterface: React.FC<StudyInterfaceProps> = ({
             deckColor={deck.color}
             isFlipped={isFlipped}
             onFlip={handleFlip}
+            onSwipeLeft={handleNext}
+            onSwipeRight={handlePrevious}
           />
         </div>
-      </div>
+      </main>
 
       {/* Navigation controls */}
-      <div className="bg-white border-t border-gray-200 p-4">
+      <nav className="bg-white border-t border-gray-200 p-3 sm:p-4" role="navigation" aria-label="Flashcard navigation">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 gap-2">
             <button
               onClick={handlePrevious}
               disabled={isFirstCard}
-              className={`px-6 py-2 rounded-lg transition-colors ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-colors text-sm sm:text-base flex-1 sm:flex-none focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 isFirstCard
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
+              aria-label={isFirstCard ? 'Previous card (not available)' : 'Go to previous card'}
+              aria-disabled={isFirstCard}
             >
-              Previous
+              <span className="hidden sm:inline">Previous</span>
+              <span className="sm:hidden">Prev</span>
             </button>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center">
               <button
                 onClick={handleFlip}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-label={isFlipped ? 'Show front of card' : 'Show back of card'}
               >
-                {isFlipped ? 'Show Front' : 'Show Back'}
+                <span className="hidden sm:inline">{isFlipped ? 'Show Front' : 'Show Back'}</span>
+                <span className="sm:hidden">Flip</span>
               </button>
             </div>
 
             <button
               onClick={handleNext}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-3 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base flex-1 sm:flex-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-label={isLastCard ? 'Finish study session' : 'Go to next card'}
             >
-              {isLastCard ? 'Finish' : 'Next'}
+              <span className="hidden sm:inline">{isLastCard ? 'Finish' : 'Next'}</span>
+              <span className="sm:hidden">{isLastCard ? 'Done' : 'Next'}</span>
             </button>
           </div>
           
-          {/* Keyboard shortcuts hint */}
-          <div className="text-center text-xs text-gray-500">
+          {/* Keyboard shortcuts hint - hidden on mobile */}
+          <div className="text-center text-xs text-gray-500 hidden sm:block" aria-label="Keyboard shortcuts">
             <span className="inline-block mx-2">← → Navigate</span>
             <span className="inline-block mx-2">Space Flip</span>
             <span className="inline-block mx-2">Esc Exit</span>
           </div>
         </div>
-      </div>
+      </nav>
     </div>
   );
 };

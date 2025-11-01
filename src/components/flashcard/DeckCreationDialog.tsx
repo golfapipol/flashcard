@@ -21,6 +21,8 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
   const [selectedColor, setSelectedColor] = useState<DeckColor>(DECK_COLORS[0]);
   const [nameError, setNameError] = useState('');
   const { isLoading } = useLoading();
+  const dialogRef = React.useRef<HTMLDivElement>(null);
+  const nameInputRef = React.useRef<HTMLInputElement>(null);
 
   // Reset form when dialog opens/closes or defaultName changes
   useEffect(() => {
@@ -28,8 +30,49 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
       setDeckName(defaultName);
       setSelectedColor(DECK_COLORS[0]);
       setNameError('');
+      // Focus the name input when dialog opens
+      setTimeout(() => {
+        nameInputRef.current?.focus();
+      }, 100);
     }
   }, [isOpen, defaultName]);
+
+  // Handle keyboard navigation and focus trapping
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleCancel();
+      }
+      
+      if (e.key === 'Tab') {
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+
+        const focusableElements = dialog.querySelectorAll(
+          'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   const validateName = (name: string): boolean => {
     const trimmedName = name.trim();
@@ -82,13 +125,19 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dialog-title"
+      aria-describedby="dialog-description"
+    >
+      <div ref={dialogRef} className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Create New Deck</h2>
+          <h2 id="dialog-title" className="text-xl font-semibold text-gray-900">Create New Deck</h2>
           {cardCount > 0 && (
-            <p className="text-sm text-gray-600 mt-1">
+            <p id="dialog-description" className="text-sm text-gray-600 mt-1">
               Ready to import {cardCount} flashcard{cardCount !== 1 ? 's' : ''}
             </p>
           )}
@@ -102,6 +151,7 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
               Deck Name
             </label>
             <input
+              ref={nameInputRef}
               id="deckName"
               type="text"
               value={deckName}
@@ -114,26 +164,27 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
                   : 'border-gray-300 focus:border-blue-500'
                 }
               `}
-              autoFocus
+              aria-invalid={!!nameError}
+              aria-describedby={nameError ? 'name-error' : undefined}
             />
             {nameError && (
-              <p className="mt-1 text-sm text-red-600">{nameError}</p>
+              <p id="name-error" className="mt-1 text-sm text-red-600" role="alert">{nameError}</p>
             )}
           </div>
 
           {/* Color Selection */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+          <fieldset className="mb-6">
+            <legend className="block text-sm font-medium text-gray-700 mb-3">
               Deck Color
-            </label>
-            <div className="grid grid-cols-4 gap-3">
-              {DECK_COLORS.map((color) => (
+            </legend>
+            <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Select deck color">
+              {DECK_COLORS.map((color, index) => (
                 <button
                   key={color}
                   type="button"
                   onClick={() => setSelectedColor(color)}
                   className={`
-                    w-full h-12 rounded-md border-2 transition-all duration-200
+                    w-full h-12 rounded-md border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                     ${selectedColor === color 
                       ? 'border-gray-800 scale-105 shadow-md' 
                       : 'border-gray-200 hover:border-gray-400 hover:scale-102'
@@ -141,12 +192,27 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
                   `}
                   style={{ backgroundColor: color }}
                   aria-label={`Select color ${color}`}
+                  role="radio"
+                  aria-checked={selectedColor === color}
+                  tabIndex={selectedColor === color ? 0 : -1}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      const nextIndex = (index + 1) % DECK_COLORS.length;
+                      setSelectedColor(DECK_COLORS[nextIndex]);
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      const prevIndex = (index - 1 + DECK_COLORS.length) % DECK_COLORS.length;
+                      setSelectedColor(DECK_COLORS[prevIndex]);
+                    }
+                  }}
                 >
                   {selectedColor === color && (
                     <svg 
                       className="w-6 h-6 text-white mx-auto drop-shadow-sm" 
                       fill="currentColor" 
                       viewBox="0 0 20 20"
+                      aria-hidden="true"
                     >
                       <path 
                         fillRule="evenodd" 
@@ -161,7 +227,7 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
             <p className="text-xs text-gray-500 mt-2">
               Choose a color to help identify your deck
             </p>
-          </div>
+          </fieldset>
 
           {/* Preview */}
           <div className="mb-6">
@@ -196,7 +262,7 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
             type="button"
             onClick={handleCancel}
             disabled={isLoading('createDeck')}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
             Cancel
           </LoadingButton>
@@ -207,7 +273,7 @@ export const DeckCreationDialog: React.FC<DeckCreationDialogProps> = ({
             isLoading={isLoading('createDeck')}
             loadingText="Creating..."
             className={`
-              px-4 py-2 rounded-md transition-colors
+              px-4 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
               ${!deckName.trim() || !!nameError
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-500 text-white hover:bg-blue-600'

@@ -112,17 +112,18 @@ interface LoadingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   children: ReactNode;
 }
 
-export const LoadingButton: React.FC<LoadingButtonProps> = ({
+export const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonProps>(({
   isLoading = false,
   loadingText,
   children,
   disabled,
   className = '',
   ...props
-}) => {
+}, ref) => {
   return (
     <button
       {...props}
+      ref={ref}
       disabled={disabled || isLoading}
       className={`
         relative flex items-center justify-center
@@ -136,4 +137,6 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
       {isLoading && loadingText ? loadingText : children}
     </button>
   );
-};
+});
+
+LoadingButton.displayName = 'LoadingButton';
